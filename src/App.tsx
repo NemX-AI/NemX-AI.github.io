@@ -117,15 +117,15 @@ function Hero() {
           transition={{ duration: 1.4, ease, delay: 0.2 }}
           className="flex select-none flex-col items-center justify-center"
         >
-          <h1 id="hero-title" className="font-display text-[7.5vw] font-medium leading-[0.9] tracking-tight text-black md:text-[5.8vw] lg:text-[4.6vw]">
-            Building BCI
+          <h1 id="hero-title" className="font-display text-[6.5vw] font-medium leading-[0.9] tracking-tight text-black md:text-[5.8vw] lg:text-[4.6vw]">
+            Neuro Encoding
           </h1>
-          <h2 className="mt-1 font-display text-[7.5vw] font-medium leading-[0.9] tracking-tight md:mt-1.5 md:text-[5.8vw] lg:text-[4.6vw]">
+          <h2 className="mt-1 whitespace-nowrap font-display text-[6.5vw] font-medium leading-[0.9] tracking-tight md:mt-1.5 md:text-[5.8vw] lg:text-[4.6vw]">
             <span className="mr-1.5 font-light tracking-tight text-black/25 md:mr-2">
-              Symbiotic
+              and Modeling
             </span>
             <span className="font-medium tracking-tight text-black">
-              AI
+              Exploration
             </span>
           </h2>
         </motion.div>
@@ -145,11 +145,11 @@ function Footer() {
       >
         <div className="max-w-[300px] md:max-w-[340px]">
           <p className="mb-2 text-[11.5px] font-medium text-black/50">
-            Neuro Encoding &amp; Modeling
+            Our mission
           </p>
           <p className="text-[19px] font-normal leading-[1.15] tracking-tight text-black md:text-[21px]">
-            Decoding human intent from brain signals to build AI that thinks,
-            moves, and lives alongside you
+            Building BCI symbiotic AI that decodes human intent from brain
+            signals to think, move, and live alongside you
           </p>
         </div>
 
