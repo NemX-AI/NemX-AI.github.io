@@ -1,0 +1,338 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-black: #000000;
+  --color-brand-gray: #F5F5F7;
+  --color-brand-text-muted: #6E6E73;
+}
+
+.hands-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.bottom-gradient {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  height: 220px;
+  pointer-events: none;
+  background: linear-gradient(to top, white 0%, rgb(255 255 255 / 80%) 48%, transparent 100%);
+}
+
+.hands-frame {
+  position: absolute;
+  top: calc(27.5% + 200px);
+  left: 0;
+  width: 100%;
+  aspect-ratio: 3;
+  transform: translateY(-50%);
+}
+
+.hands-canvas,
+.hands-poster {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hands-canvas,
+.hands-frame[data-ready='true'] .hands-poster {
+  opacity: 0;
+}
+
+.hands-frame[data-ready='true'] .hands-canvas {
+  opacity: 1;
+}
+
+.hands-source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+@media (max-width: 639px) {
+  .hands-frame {
+    top: calc(33% + 200px);
+  }
+}
+
+.about-section {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  padding: 132px 48px 36px;
+  gap: 28px;
+  overflow: hidden;
+  background: transparent;
+  color: black;
+  letter-spacing: 0;
+}
+
+.about-grid {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: 1.25fr 1fr;
+  grid-template-rows: 1fr auto;
+  grid-template-areas: 'headline cognition' 'bio movement';
+  gap: 24px 72px;
+}
+
+.about-headline {
+  grid-area: headline;
+}
+
+.about-headline h2 {
+  font-family: var(--font-display);
+  font-size: 58px;
+  font-weight: 500;
+  line-height: 0.98;
+}
+
+.about-headline h2 span {
+  display: block;
+}
+
+.about-intro {
+  max-width: 420px;
+  margin-top: 22px;
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--color-brand-text-muted);
+}
+
+.about-cognition {
+  grid-area: cognition;
+}
+
+.about-movement {
+  grid-area: movement;
+}
+
+.about-feature {
+  text-align: right;
+}
+
+.about-overline {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-brand-text-muted);
+}
+
+.about-feature h3 {
+  margin-top: 12px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.08;
+}
+
+.about-detail {
+  max-width: 320px;
+  margin-top: 14px;
+  margin-left: auto;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-brand-text-muted);
+}
+
+.about-bio {
+  grid-area: bio;
+  align-self: end;
+  max-width: 420px;
+}
+
+.about-bio > p + p {
+  margin-top: 14px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.about-disciplines {
+  display: grid;
+  flex-shrink: 0;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 22px 0 0;
+  border-top: 1px solid rgb(0 0 0 / 15%);
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.about-disciplines li:last-child {
+  text-align: right;
+}
+
+@media (min-width: 768px) and (max-height: 780px),
+  (min-width: 768px) and (max-width: 1023px) {
+  .about-section {
+    padding-top: 104px;
+    padding-bottom: 24px;
+    gap: 24px;
+  }
+
+  .about-grid {
+    gap: 20px 64px;
+  }
+
+  .about-headline h2 {
+    font-size: 48px;
+  }
+
+  .about-intro {
+    margin-top: 16px;
+    font-size: 16px;
+  }
+
+  .about-feature h3 {
+    font-size: 28px;
+    margin-top: 10px;
+  }
+
+  .about-detail {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .about-bio > p + p {
+    font-size: 15px;
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .about-section {
+    padding: 148px 24px 24px;
+    gap: 24px;
+  }
+
+  .about-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: 'headline headline' 'cognition movement' 'bio bio';
+    gap: 24px 20px;
+  }
+
+  .about-headline h2 {
+    font-size: 38px;
+  }
+
+  .about-intro {
+    margin-top: 16px;
+    max-width: 360px;
+    font-size: 16px;
+  }
+
+  .about-feature,
+  .about-disciplines li:last-child {
+    text-align: left;
+  }
+
+  .about-overline {
+    font-size: 12px;
+  }
+
+  .about-feature h3 {
+    font-size: 22px;
+    margin-top: 12px;
+  }
+
+  .about-detail {
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .about-bio > p + p {
+    font-size: 14px;
+    margin-top: 10px;
+    line-height: 1.45;
+  }
+
+  .about-disciplines {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-top: 16px;
+    gap: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 767px) and (max-height: 740px) {
+  .about-section {
+    padding-top: 136px;
+    padding-bottom: 20px;
+    gap: 16px;
+  }
+
+  .about-grid {
+    gap: 16px;
+  }
+
+  .about-headline h2 {
+    font-size: 36px;
+  }
+
+  .about-intro {
+    font-size: 14px;
+    margin-top: 12px;
+  }
+
+  .about-feature h3 {
+    font-size: 22px;
+    margin-top: 8px;
+  }
+
+  .about-detail {
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  .about-bio > p + p {
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  .about-disciplines {
+    padding-top: 12px;
+    gap: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-white text-brand-black font-sans antialiased selection:bg-black selection:text-white;
+    margin: 0;
+  }
+
+  button {
+    font: inherit;
+  }
+}
