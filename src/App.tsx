@@ -118,7 +118,10 @@ function Hero() {
           className="flex select-none flex-col items-center justify-center"
         >
           <h1 id="hero-title" className="font-display text-[6.5vw] font-medium leading-[0.9] tracking-tight text-black md:text-[5.8vw] lg:text-[4.6vw]">
-            Neuro Encoding
+            Neuro{' '}
+            <span className="font-light tracking-tight text-black/25">
+              Encoding
+            </span>
           </h1>
           <h2 className="mt-1 whitespace-nowrap font-display text-[6.5vw] font-medium leading-[0.9] tracking-tight md:mt-1.5 md:text-[5.8vw] lg:text-[4.6vw]">
             <span className="mr-1.5 font-light tracking-tight text-black/25 md:mr-2">
