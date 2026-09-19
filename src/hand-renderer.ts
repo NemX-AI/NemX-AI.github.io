@@ -33,11 +33,13 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
-export function createHandRenderer(
-  canvas: HTMLCanvasElement,
-  video: HTMLVideoElement,
-  onReady: (ready: boolean) => void,
-) {
+type Painter = {
+  render: () => void;
+  resize: (width: number, height: number) => void;
+  dispose: () => void;
+};
+
+function createWebGLPainter(canvas: HTMLCanvasElement, video: HTMLVideoElement): Painter {
   const renderer = new WebGLRenderer({
     canvas,
     alpha: true,
@@ -67,7 +69,79 @@ export function createHandRenderer(
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
   scene.add(new Mesh(geometry, material));
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  return {
+    render: () => {
+      texture.needsUpdate = true;
+      renderer.render(scene, camera);
+    },
+    resize: (width, height) => renderer.setSize(width, height, false),
+    dispose: () => {
+      texture.dispose();
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+    },
+  };
+}
+
+// Used when WebGL is unavailable (blocklisted GPU, hardware acceleration off).
+// Composites the same colour/matte halves on the CPU.
+
+function create2DPainter(canvas: HTMLCanvasElement, video: HTMLVideoElement): Painter {
+  const ctx = canvas.getContext('2d');
+  const work = document.createElement('canvas');
+  const workCtx = work.getContext('2d', { willReadFrequently: true });
+  if (!ctx || !workCtx) throw new Error('Canvas 2D unavailable');
+
+  return {
+    render: () => {
+      const halfHeight = video.videoHeight / 2;
+      if (!video.videoWidth || !halfHeight) return;
+      const w = Math.min(video.videoWidth, canvas.width);
+      const h = Math.max(1, Math.round((w * halfHeight) / video.videoWidth));
+      if (work.width !== w || work.height !== h * 2) {
+        work.width = w;
+        work.height = h * 2;
+      }
+      // Draw each half on its own so scaling never blends colour into matte at the seam.
+      workCtx.drawImage(video, 0, 0, video.videoWidth, halfHeight, 0, 0, w, h);
+      workCtx.drawImage(video, 0, halfHeight, video.videoWidth, halfHeight, 0, h, w, h);
+      const frame = workCtx.getImageData(0, 0, w, h * 2);
+      const px = frame.data;
+      const matteOffset = w * h * 4;
+      for (let i = 0; i < matteOffset; i += 4) {
+        // smoothstep(0.02, 0.98, matte), matching the WebGL shader.
+        const t = Math.min(1, Math.max(0, (px[matteOffset + i] / 255 - 0.02) / 0.96));
+        px[i + 3] = t * t * (3 - 2 * t) * 255;
+      }
+      workCtx.putImageData(frame, 0, 0, 0, 0, w, h);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(work, 0, 0, w, h, 0, 0, canvas.width, canvas.height);
+    },
+    resize: (width, height) => {
+      const ratio = Math.min(window.devicePixelRatio, 2);
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+    },
+    dispose: () => {
+      work.width = 0;
+      work.height = 0;
+    },
+  };
+}
+
+export function createHandRenderer(
+  canvas: HTMLCanvasElement,
+  video: HTMLVideoElement,
+  onReady: (ready: boolean) => void,
+) {
+  let painter: Painter;
+  try {
+    painter = createWebGLPainter(canvas, video);
+  } catch {
+    painter = create2DPainter(canvas, video);
+  }
+
   let stopped = false;
   let contextLost = false;
   let frameHandle: number | undefined;
@@ -77,8 +151,7 @@ export function createHandRenderer(
 
   const draw = () => {
     if (stopped || contextLost || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
-    texture.needsUpdate = true;
-    renderer.render(scene, camera);
+    painter.render();
     if (!hasFrame) {
       hasFrame = true;
       onReady(true);
@@ -115,25 +188,22 @@ export function createHandRenderer(
   };
 
   const play = () => {
-    if (!stopped && !contextLost && !document.hidden && !reducedMotion.matches) {
+    if (!stopped && !contextLost && !document.hidden) {
       void video.play().catch(() => draw());
     }
   };
   const onPlaying = () => { cancelFrame(); scheduleFrame(); };
   const syncPlayback = () => {
     cancelFrame();
-    if (document.hidden || reducedMotion.matches || contextLost) {
+    if (document.hidden || contextLost) {
       video.pause();
-      if (reducedMotion.matches && Number.isFinite(video.duration)) {
-        video.currentTime = Math.min(4.8, video.duration);
-      }
       draw();
     } else play();
   };
   const onLoaded = () => { draw(); syncPlayback(); };
   const resize = () => {
     const { width, height } = canvas.getBoundingClientRect();
-    renderer.setSize(Math.max(1, width), Math.max(1, height), false);
+    painter.resize(Math.max(1, width), Math.max(1, height));
     draw();
   };
   const onContextLost = (event: Event) => {
@@ -157,7 +227,6 @@ export function createHandRenderer(
   video.addEventListener('error', onError);
   document.addEventListener('visibilitychange', syncPlayback);
   window.addEventListener('pointerdown', play, { passive: true });
-  reducedMotion.addEventListener('change', syncPlayback);
   video.muted = true;
   resize();
   if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) onLoaded();
@@ -175,11 +244,7 @@ export function createHandRenderer(
     video.removeEventListener('error', onError);
     document.removeEventListener('visibilitychange', syncPlayback);
     window.removeEventListener('pointerdown', play);
-    reducedMotion.removeEventListener('change', syncPlayback);
-    video.pause();
-    texture.dispose();
-    geometry.dispose();
-    material.dispose();
-    renderer.dispose();
+      video.pause();
+    painter.dispose();
   };
 }
