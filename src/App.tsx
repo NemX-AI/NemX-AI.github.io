@@ -122,7 +122,7 @@ function Hero() {
           </h1>
           <h2 className="mt-1 whitespace-nowrap font-display text-[6.5vw] font-medium leading-[0.9] tracking-tight md:mt-1.5 md:text-[5.8vw] lg:text-[4.6vw]">
             <span className="mr-1.5 font-light tracking-tight text-black/25 md:mr-2">
-              and Modeling
+              Modeling
             </span>
             <span className="font-medium tracking-tight text-black">
               Exploration
