@@ -85,8 +85,8 @@ function Navbar() {
         </button>
 
         <div className="hidden h-11 select-none items-center gap-5 rounded-full border border-black/[0.03] bg-[#F4F4F6] px-6 text-[11.5px] font-normal text-black/60 md:flex">
-          <span>Advanced Bionics</span>
-          <span>Cognitive AI</span>
+          <span>Neuro Encoding</span>
+          <span>Neuro Modeling</span>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ function Navbar() {
             <AdaptiveIcon />
           </span>
           <span className="select-none text-[11px] font-medium text-black/70">
-            Adaptive Systems
+            Symbiotic Intelligence
           </span>
         </button>
       </div>
@@ -145,18 +145,18 @@ function Footer() {
       >
         <div className="max-w-[300px] md:max-w-[340px]">
           <p className="mb-2 text-[11.5px] font-medium text-black/50">
-            Autonomous Dynamics
+            Neuro Encoding &amp; Modeling
           </p>
           <p className="text-[19px] font-normal leading-[1.15] tracking-tight text-black md:text-[21px]">
-            Unifying biological grace with machine intelligence to design the
-            next era of fusion
+            Decoding human intent from brain signals to build AI that thinks,
+            moves, and lives alongside you
           </p>
         </div>
 
         <div className="hidden h-16 w-px bg-black/[0.08] lg:block" />
 
         <div className="flex flex-wrap gap-2.5">
-          {['Neuromorphic', 'AGI', 'Cybernetics'].map((tag) => (
+          {['EEG Models', 'BCI', 'Embodied AI'].map((tag) => (
             <button
               key={tag}
               type="button"
@@ -207,43 +207,43 @@ export default function App() {
             <div className="about-headline">
               <h2 id="about-title">
                 <span>Built to</span>
-                <span>move with you</span>
+                <span>think with you</span>
               </h2>
               <p className="about-intro">
-                Biological instinct. Adaptive intelligence.
-                A more natural connection between human and machine.
+                Brain foundation models. Human intent understanding.
+                A symbiotic connection between mind and machine.
               </p>
             </div>
 
             <div className="about-feature about-cognition">
-              <p className="about-overline">01 / Cognitive intelligence</p>
-              <h3>Sense.<br />Understand.<br />Adapt.</h3>
+              <p className="about-overline">01 / EEG foundation models</p>
+              <h3>Encode.<br />Model.<br />Understand.</h3>
               <p className="about-detail">
-                Intelligence that reads the world around it, learns from every
-                interaction, and responds in the moment.
+                Large-scale models trained on brain signals, learning a universal
+                language of neural activity across people, tasks, and devices.
               </p>
             </div>
 
             <div className="about-bio">
-              <p className="about-overline">The human side of technology</p>
+              <p className="about-overline">Symbiotic intelligence</p>
               <p>
-                We work at the intersection of biology and computation.
-                Every system begins with the way people feel, think, and move.
+                NemX stands for Neuro Encoding &amp; Modeling. The X marks the
+                frontier we intend to cross: AI that grows together with the human mind.
               </p>
             </div>
 
             <div className="about-feature about-movement">
-              <p className="about-overline">02 / Advanced bionics</p>
-              <h3>Precision.<br />With feeling.</h3>
+              <p className="about-overline">02 / Brain-computer interfaces</p>
+              <h3>From intent.<br />To action.</h3>
               <p className="about-detail">
-                Engineered for strength. Designed for subtlety.
-                Movement that feels like a part of you.
+                Brain-controlled embodied agents and companion intelligence
+                that understand what you mean and act alongside you.
               </p>
             </div>
           </div>
 
           <ul className="about-disciplines" aria-label="Our disciplines">
-            {['Bionics', 'Cognition', 'Perception', 'Robotics', 'Adaptation', 'Symbiosis'].map((discipline) => (
+            {['EEG Models', 'Intent Decoding', 'BCI', 'Embodied AI', 'Companion AI', 'Symbiosis'].map((discipline) => (
               <li key={discipline}>{discipline}</li>
             ))}
           </ul>
