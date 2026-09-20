@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hero autoplay regression fixture</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <output id="autoplay-check" aria-label="Autoplay regression result">Waiting for startup</output>
+    <script type="module">
+      // Dev-only manual fixture. Open through Vite with ?mode=blocked or
+      // ?mode=stalled to verify the real homepage without interacting with it.
+      const mode = new URLSearchParams(location.search).get('mode');
+      const originalPlay = HTMLMediaElement.prototype.play;
+      if (mode === 'stalled') {
+        document.addEventListener('play', (event) => {
+          if (event.target.classList?.contains('hands-source')) event.target.pause();
+        }, true);
+      }
+      HTMLMediaElement.prototype.play = function () {
+        if (this.classList.contains('hands-source')) {
+          if (mode === 'blocked') return Promise.reject(new DOMException('Autoplay denied', 'NotAllowedError'));
+          if (mode === 'stalled') return new Promise(() => {});
+        }
+        return originalPlay.call(this);
+      };
+      let sawContact = false;
+      let sawOpening = false;
+      const report = document.getElementById('autoplay-check');
+      new MutationObserver(() => {
+        if (document.querySelector('.hands-frame')?.dataset.fallback !== 'true') return;
+        const reveal = Number(document.getElementById('home').style.getPropertyValue('--hero-reveal'));
+        sawContact ||= reveal === 0;
+        sawOpening ||= reveal > 0 && reveal < 1;
+        report.textContent = `Fallback: true; contact: ${sawContact}; animated opening: ${sawOpening}; fully open: ${reveal === 1}`;
+      }).observe(document.getElementById('root'), { attributes: true, attributeFilter: ['style', 'data-fallback'], subtree: true });
+      import('/src/main.tsx');
+    </script>
+  </body>
+</html>

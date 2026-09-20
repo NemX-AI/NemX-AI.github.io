@@ -324,6 +324,16 @@
   opacity: 1;
 }
 
+.hands-poster-left {
+  clip-path: inset(0 50% 0 0);
+  transform: translateX(calc(var(--hands-opening, 0) * -22%));
+}
+
+.hands-poster-right {
+  clip-path: inset(0 0 0 50%);
+  transform: translateX(calc(var(--hands-opening, 0) * 22%));
+}
+
 .hands-source {
   position: absolute;
   width: 1px;
