@@ -119,4 +119,4 @@ export const publications: Publication[] = [
 ];
 
 // Public contact addresses confirmed by the team. Drafts address both recipients.
-export const contactEmails = ['chen.zheng.bn1@gmail.com', 'hezhy58@outlook.com'];
+export const contactEmails = ['NemXAI2@gmail.com', 'hezhy58@outlook.com'];
