@@ -1,9 +1,50 @@
-import { Plus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import HandsOverlay from './HandsOverlay';
+import DemoPlayer from './DemoPlayer';
+import { demos, type Demo } from './demos';
+import SymbiosisSection from './SymbiosisSection';
+import { ContactPage, NewsPage, PublicationsPage, SiteFooter } from './SitePages';
+import { usePage, type Page } from './use-page';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const backgroundVideo = '/media/background.mp4';
+
+function BackgroundVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const syncPlayback = () => {
+      if (document.hidden) video.pause();
+      else if (video.paused) void video.play().catch(() => {});
+    };
+    document.addEventListener('visibilitychange', syncPlayback);
+    window.addEventListener('pointerdown', syncPlayback, { passive: true });
+    syncPlayback();
+    return () => {
+      document.removeEventListener('visibilitychange', syncPlayback);
+      window.removeEventListener('pointerdown', syncPlayback);
+      video.pause();
+    };
+  }, []);
+
+  return (
+    <video
+      ref={videoRef}
+      src={backgroundVideo}
+      autoPlay
+      loop
+      muted
+      playsInline
+      tabIndex={-1}
+      disablePictureInPicture
+      className="absolute inset-0 h-full w-full object-cover"
+    />
+  );
+}
 
 function NeuralMark() {
   return (
@@ -11,7 +52,7 @@ function NeuralMark() {
       aria-hidden="true"
       viewBox="0 0 40 40"
       fill="currentColor"
-      className="h-10 w-10 translate-y-[1px] text-black"
+      className="h-12 w-12 translate-y-[1px] text-black"
     >
       <rect
         x="7"
@@ -57,133 +98,121 @@ function AdaptiveIcon() {
   );
 }
 
-function Navbar() {
+function Navbar({ page }: { page: Page }) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const syncScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener('scroll', syncScroll, { passive: true });
+    syncScroll();
+    return () => window.removeEventListener('scroll', syncScroll);
+  }, []);
+
   return (
     <motion.nav
+      aria-label="Primary navigation"
+      data-scrolled={scrolled || page !== 'home'}
       initial={{ y: -16, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease }}
-      className="pointer-events-none fixed left-0 top-0 z-50 flex w-full flex-col items-center justify-between gap-4 p-6 sm:flex-row md:p-8"
+      className="site-nav pointer-events-none fixed left-0 top-0 z-50 w-full"
     >
-      <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-        <div className="flex items-center gap-1">
-          <NeuralMark />
-          <span className="font-display text-[18px] font-medium tracking-tight text-black">
-            NemX Labs
-          </span>
-        </div>
+      <a href="#home" aria-label="NemX Labs home" className="nav-brand pointer-events-auto flex items-center gap-1">
+        <NeuralMark />
+        <span className="font-display text-[26px] font-medium tracking-tight text-black">
+          NemX Labs
+        </span>
+      </a>
 
-        <button
-          type="button"
-          aria-label="Open menu"
-          className="flex cursor-pointer items-center gap-2.5 rounded-full border border-black/[0.03] bg-black p-1 pr-5 text-[12px] font-medium text-white transition-all duration-200 hover:bg-zinc-800"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black">
-            <Plus size={13} strokeWidth={3} aria-hidden="true" />
-          </span>
-          <span className="pr-1 text-[11.5px]">Menu</span>
-        </button>
-
-        <div className="hidden h-11 select-none items-center gap-5 rounded-full border border-black/[0.03] bg-[#F4F4F6] px-6 text-[11.5px] font-normal text-black/60 md:flex">
-          <span>Neuro Encoding</span>
-          <span>Neuro Modeling</span>
-        </div>
+      <div className="site-page-links">
+        <a href="#news" aria-current={page === 'news' ? 'page' : undefined}>News</a>
+        <a href="#publications" aria-current={page === 'publications' ? 'page' : undefined}>Publications</a>
+        <a href="#contact" aria-current={page === 'contact' ? 'page' : undefined}>Contact us</a>
       </div>
 
-      <div className="pointer-events-auto flex items-center">
-        <button
-          type="button"
-          className="flex items-center gap-3.5 rounded-full border border-black/[0.03] bg-[#F4F4F6] p-1 pr-6 transition-colors hover:bg-[#EAEAEF]"
+      <div className="nav-symbiosis pointer-events-auto flex items-center">
+        <a
+          href="#symbiosis"
+          aria-label="Symbiotic Intelligence"
+          className="flex items-center gap-3.5 whitespace-nowrap rounded-full border border-black/[0.03] bg-[#F4F4F6] p-1 pr-6 transition-colors hover:bg-[#EAEAEF]"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white">
             <AdaptiveIcon />
           </span>
-          <span className="select-none text-[11px] font-medium text-black/70">
+          <span className="nav-intelligence-label select-none text-[11px] font-medium text-black/70">
             Symbiotic Intelligence
           </span>
-        </button>
+        </a>
       </div>
     </motion.nav>
   );
 }
 
-function Hero() {
+function Hero({ onDemoSelect }: { onDemoSelect: (demo: Demo) => void }) {
   return (
-    <div className="relative z-30 flex min-h-0 flex-1 flex-col items-center justify-center px-6 md:px-12">
-      <div className="mt-24 w-full max-w-7xl translate-y-10 px-4 text-center md:mt-0 md:translate-y-14">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.4, ease, delay: 0.2 }}
-          className="flex select-none flex-col items-center justify-center"
-        >
-          <h1 id="hero-title" className="font-display text-[6.5vw] font-medium leading-[0.9] tracking-tight text-black md:text-[5.8vw] lg:text-[4.6vw]">
-            Neuro{' '}
-            <span className="font-light tracking-tight text-black/25">
-              Encoding
-            </span>
-          </h1>
-          <h2 className="mt-1 whitespace-nowrap font-display text-[6.5vw] font-medium leading-[0.9] tracking-tight md:mt-1.5 md:text-[5.8vw] lg:text-[4.6vw]">
-            <span className="mr-1.5 font-light tracking-tight text-black/25 md:mr-2">
-              Modeling
-            </span>
-            <span className="font-medium tracking-tight text-black">
-              Exploration
-            </span>
-          </h2>
-        </motion.div>
+    <div className="hero-content">
+      <h1 id="hero-title" className="hero-heading">
+        <span>Neuro <span className="font-light text-black/25">Encoding</span></span>
+        <span><span className="font-light text-black/25">Modeling</span> Exploration</span>
+      </h1>
+
+      <div className="hero-center">
+        <p className="hero-copy hero-statement">Symbiotic AI</p>
       </div>
+
+      <nav id="demos" className="hero-demos" aria-label="Explore our demos">
+        {demos.map((demo) => (
+          <button
+            key={demo.id}
+            type="button"
+            className="demo-link"
+            aria-haspopup="dialog"
+            onClick={() => onDemoSelect(demo)}
+          >
+            {demo.label}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
 
 function Footer() {
   return (
-    <footer className="relative z-30 w-full shrink-0 px-8 py-10 md:px-16 md:py-14">
+    <footer className="hero-footer">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.5, duration: 1, ease }}
-        className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 md:flex-row md:items-end"
+        className="mx-auto w-full max-w-7xl"
       >
-        <div className="max-w-[300px] md:max-w-[340px]">
+        <div className="hero-mission">
           <p className="mb-2 text-[11.5px] font-medium text-black/50">
             Our mission
           </p>
-          <p className="text-[19px] font-normal leading-[1.15] tracking-tight text-black md:text-[21px]">
+          <p className="mission-copy">
             Building BCI symbiotic AI that decodes human intent from brain
             signals to think, move, and live alongside you
           </p>
-        </div>
-
-        <div className="hidden h-16 w-px bg-black/[0.08] lg:block" />
-
-        <div className="flex flex-wrap gap-2.5">
-          {['EEG Models', 'BCI', 'Embodied AI'].map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              className="cursor-pointer rounded-full border border-black/15 bg-white px-6 py-3.5 text-[11.5px] font-normal text-black transition-all duration-300 hover:border-black hover:bg-black hover:text-white active:scale-95"
-            >
-              {tag}
-            </button>
-          ))}
         </div>
       </motion.div>
     </footer>
   );
 }
 
-export default function App() {
+function HomePage({ onDemoSelect }: { onDemoSelect: (demo: Demo) => void }) {
+  const sceneRef = useRef<HTMLElement>(null);
+
   return (
-    <div className="w-full bg-white font-sans text-black antialiased selection:bg-black selection:text-white">
-      <Navbar />
-      <div aria-hidden="true" className="bottom-gradient" />
-      <main>
+    <>
         <section
+          ref={sceneRef}
+          id="home"
+          tabIndex={-1}
           aria-labelledby="hero-title"
-          className="relative flex h-screen w-full flex-col justify-between overflow-hidden"
+          className="hero-section relative flex w-full flex-col justify-between overflow-hidden"
         >
+          <div aria-hidden="true" className="bottom-gradient" />
           <motion.div
             aria-hidden="true"
             initial={{ opacity: 0, scale: 1.05 }}
@@ -191,67 +220,36 @@ export default function App() {
             transition={{ duration: 1.8, ease }}
             className="pointer-events-none fixed inset-0 z-0 select-none"
           >
-            <video
-              src={backgroundVideo}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+            <BackgroundVideo />
           </motion.div>
-          <HandsOverlay />
-          <Hero />
+          <div aria-hidden="true" className="hero-scene-veil" />
+          <HandsOverlay sceneRef={sceneRef} />
+          <Hero onDemoSelect={onDemoSelect} />
           <Footer />
         </section>
 
-        <section aria-labelledby="about-title" className="about-section">
-          <div className="about-grid">
-            <div className="about-headline">
-              <h2 id="about-title">
-                <span>Built to</span>
-                <span>think with you</span>
-              </h2>
-              <p className="about-intro">
-                Brain foundation models. Human intent understanding.
-                A symbiotic connection between mind and machine.
-              </p>
-            </div>
+      <SymbiosisSection onDemoSelect={onDemoSelect} />
+    </>
+  );
+}
 
-            <div className="about-feature about-cognition">
-              <p className="about-overline">01 / EEG foundation models</p>
-              <h3>Encode.<br />Model.<br />Understand.</h3>
-              <p className="about-detail">
-                Large-scale models trained on brain signals, learning a universal
-                language of neural activity across people, tasks, and devices.
-              </p>
-            </div>
+export default function App() {
+  const page = usePage();
+  const [activeDemo, setActiveDemo] = useState<Demo | null>(null);
 
-            <div className="about-bio">
-              <p className="about-overline">Symbiotic intelligence</p>
-              <p>
-                NemX stands for Neuro Encoding &amp; Modeling. The X marks the
-                frontier we intend to cross: AI that grows together with the human mind.
-              </p>
-            </div>
+  useEffect(() => setActiveDemo(null), [page]);
 
-            <div className="about-feature about-movement">
-              <p className="about-overline">02 / Brain-computer interfaces</p>
-              <h3>From intent.<br />To action.</h3>
-              <p className="about-detail">
-                Brain-controlled embodied agents and companion intelligence
-                that understand what you mean and act alongside you.
-              </p>
-            </div>
-          </div>
-
-          <ul className="about-disciplines" aria-label="Our disciplines">
-            {['EEG Models', 'Intent Decoding', 'BCI', 'Embodied AI', 'Companion AI', 'Symbiosis'].map((discipline) => (
-              <li key={discipline}>{discipline}</li>
-            ))}
-          </ul>
-        </section>
+  return (
+    <div className="w-full bg-white font-sans text-black antialiased selection:bg-black selection:text-white">
+      <Navbar page={page} />
+      <main>
+        {page === 'home' && <HomePage onDemoSelect={setActiveDemo} />}
+        {page === 'news' && <NewsPage />}
+        {page === 'publications' && <PublicationsPage />}
+        {page === 'contact' && <ContactPage />}
       </main>
+      <SiteFooter />
+      {activeDemo && <DemoPlayer key={activeDemo.id} demo={activeDemo} onDismiss={() => setActiveDemo(null)} />}
     </div>
   );
 }
