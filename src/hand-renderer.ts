@@ -9,6 +9,7 @@ import {
   VideoTexture,
   WebGLRenderer,
 } from 'three';
+import { HANDS_OPENING_PROGRESS } from './hero-choreography';
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -134,6 +135,7 @@ export function createHandRenderer(
   canvas: HTMLCanvasElement,
   video: HTMLVideoElement,
   onReady: (ready: boolean) => void,
+  onFrame?: (progress: number) => void,
 ) {
   let painter: Painter;
   try {
@@ -144,14 +146,27 @@ export function createHandRenderer(
 
   let stopped = false;
   let contextLost = false;
+  let inView = false;
   let frameHandle: number | undefined;
   let frameIsVideoCallback = false;
   let lastTime = -1;
   let hasFrame = false;
+  let openingPending = true;
+  let playbackBlocked = false;
+
+  const prepareOpening = () => {
+    if (!openingPending || !Number.isFinite(video.duration) || video.duration <= 0) return;
+    openingPending = false;
+    video.currentTime = video.duration * HANDS_OPENING_PROGRESS;
+  };
 
   const draw = () => {
-    if (stopped || contextLost || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+    if (stopped || contextLost || openingPending || playbackBlocked || video.seeking
+      || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
     painter.render();
+    if (Number.isFinite(video.duration) && video.duration > 0) {
+      onFrame?.(video.currentTime / video.duration);
+    }
     if (!hasFrame) {
       hasFrame = true;
       onReady(true);
@@ -166,7 +181,7 @@ export function createHandRenderer(
   };
 
   const scheduleFrame = () => {
-    if (stopped || contextLost || document.hidden || video.paused) return;
+    if (stopped || contextLost || !inView || document.hidden || video.paused) return;
     if (typeof video.requestVideoFrameCallback === 'function') {
       frameIsVideoCallback = true;
       frameHandle = video.requestVideoFrameCallback(() => {
@@ -188,19 +203,26 @@ export function createHandRenderer(
   };
 
   const play = () => {
-    if (!stopped && !contextLost && !document.hidden) {
-      void video.play().catch(() => draw());
+    if (!stopped && !contextLost && inView && !document.hidden) {
+      prepareOpening();
+      if (openingPending) return;
+      void video.play().catch(() => {
+        if (stopped || contextLost || !inView || document.hidden) return;
+        playbackBlocked = true;
+        hasFrame = false;
+        onReady(false);
+      });
     }
   };
-  const onPlaying = () => { cancelFrame(); scheduleFrame(); };
+  const onPlaying = () => { playbackBlocked = false; cancelFrame(); draw(); scheduleFrame(); };
   const syncPlayback = () => {
     cancelFrame();
-    if (document.hidden || contextLost) {
+    if (document.hidden || contextLost || !inView) {
       video.pause();
       draw();
     } else play();
   };
-  const onLoaded = () => { draw(); syncPlayback(); };
+  const onLoaded = () => { prepareOpening(); draw(); syncPlayback(); };
   const resize = () => {
     const { width, height } = canvas.getBoundingClientRect();
     painter.resize(Math.max(1, width), Math.max(1, height));
@@ -215,12 +237,18 @@ export function createHandRenderer(
     onReady(false);
   };
   const onContextRestored = () => { contextLost = false; resize(); syncPlayback(); };
-  const onError = () => { cancelFrame(); onReady(false); };
+  const onError = () => { cancelFrame(); hasFrame = false; onReady(false); };
 
   const observer = new ResizeObserver(resize);
+  const visibilityObserver = new IntersectionObserver(([entry]) => {
+    inView = entry.isIntersecting;
+    syncPlayback();
+  });
   observer.observe(canvas);
+  visibilityObserver.observe(canvas);
   canvas.addEventListener('webglcontextlost', onContextLost);
   canvas.addEventListener('webglcontextrestored', onContextRestored);
+  video.addEventListener('loadedmetadata', prepareOpening);
   video.addEventListener('loadeddata', onLoaded);
   video.addEventListener('playing', onPlaying);
   video.addEventListener('seeked', draw);
@@ -228,6 +256,7 @@ export function createHandRenderer(
   document.addEventListener('visibilitychange', syncPlayback);
   window.addEventListener('pointerdown', play, { passive: true });
   video.muted = true;
+  prepareOpening();
   resize();
   if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) onLoaded();
   else play();
@@ -236,15 +265,17 @@ export function createHandRenderer(
     stopped = true;
     cancelFrame();
     observer.disconnect();
+    visibilityObserver.disconnect();
     canvas.removeEventListener('webglcontextlost', onContextLost);
     canvas.removeEventListener('webglcontextrestored', onContextRestored);
+    video.removeEventListener('loadedmetadata', prepareOpening);
     video.removeEventListener('loadeddata', onLoaded);
     video.removeEventListener('playing', onPlaying);
     video.removeEventListener('seeked', draw);
     video.removeEventListener('error', onError);
     document.removeEventListener('visibilitychange', syncPlayback);
     window.removeEventListener('pointerdown', play);
-      video.pause();
+    video.pause();
     painter.dispose();
   };
 }
