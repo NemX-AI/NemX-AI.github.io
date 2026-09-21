@@ -10,9 +10,23 @@ Requires Node.js >= 22.13.
 ```bash
 npm ci
 npm run dev      # local dev server
+npm test         # mobile video playback regression checks
 npm run build    # production build into dist/
 npm run preview  # serve the production build
 ```
+
+The hero requests muted inline playback before metadata arrives, then seeks to
+the fingertip-contact cue as soon as seeking is available. It handles delayed
+mobile loading, WeChat readiness, visibility changes, and interrupted requests.
+If autoplay is denied or the decoder makes no progress for three visible seconds,
+the existing contact image animates the two hands apart and reveals the copy.
+This fallback needs no tap and stops after the opening; reduced-motion mode shows
+the open state. Video playback and regression tests live in `src/hand-playback.ts`
+and `tests/hand-playback.test.mjs`.
+With Vite running, `/tests/fixtures/hand-autoplay.html?mode=blocked` simulates an
+autoplay denial; `?mode=stalled` simulates a decoder that never advances. Without
+clicking the page, the diagnostic below its footer should report contact,
+animated opening, and fully open as true (unless reduced motion is enabled).
 
 ## Content and contact
 

@@ -9,7 +9,7 @@ import {
   VideoTexture,
   WebGLRenderer,
 } from 'three';
-import { HANDS_OPENING_PROGRESS } from './hero-choreography';
+import { createHandPlayback } from './hand-playback';
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -144,138 +144,55 @@ export function createHandRenderer(
     painter = create2DPainter(canvas, video);
   }
 
-  let stopped = false;
   let contextLost = false;
   let inView = false;
-  let frameHandle: number | undefined;
-  let frameIsVideoCallback = false;
-  let lastTime = -1;
   let hasFrame = false;
-  let openingPending = true;
-  let playbackBlocked = false;
-
-  const prepareOpening = () => {
-    if (!openingPending || !Number.isFinite(video.duration) || video.duration <= 0) return;
-    openingPending = false;
-    video.currentTime = video.duration * HANDS_OPENING_PROGRESS;
-  };
-
-  const draw = () => {
-    if (stopped || contextLost || openingPending || playbackBlocked || video.seeking
-      || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
-    painter.render();
-    if (Number.isFinite(video.duration) && video.duration > 0) {
-      onFrame?.(video.currentTime / video.duration);
-    }
-    if (!hasFrame) {
-      hasFrame = true;
-      onReady(true);
-    }
-  };
-
-  const cancelFrame = () => {
-    if (frameHandle === undefined) return;
-    if (frameIsVideoCallback) video.cancelVideoFrameCallback(frameHandle);
-    else cancelAnimationFrame(frameHandle);
-    frameHandle = undefined;
-  };
-
-  const scheduleFrame = () => {
-    if (stopped || contextLost || !inView || document.hidden || video.paused) return;
-    if (typeof video.requestVideoFrameCallback === 'function') {
-      frameIsVideoCallback = true;
-      frameHandle = video.requestVideoFrameCallback(() => {
-        frameHandle = undefined;
-        draw();
-        scheduleFrame();
-      });
-    } else {
-      frameIsVideoCallback = false;
-      frameHandle = requestAnimationFrame(() => {
-        frameHandle = undefined;
-        if (video.currentTime !== lastTime) {
-          draw();
-          lastTime = video.currentTime;
-        }
-        scheduleFrame();
-      });
-    }
-  };
-
-  const play = () => {
-    if (!stopped && !contextLost && inView && !document.hidden) {
-      prepareOpening();
-      if (openingPending) return;
-      void video.play().catch(() => {
-        if (stopped || contextLost || !inView || document.hidden) return;
-        playbackBlocked = true;
-        hasFrame = false;
-        onReady(false);
-      });
-    }
-  };
-  const onPlaying = () => { playbackBlocked = false; cancelFrame(); draw(); scheduleFrame(); };
-  const syncPlayback = () => {
-    cancelFrame();
-    if (document.hidden || contextLost || !inView) {
-      video.pause();
-      draw();
-    } else play();
-  };
-  const onLoaded = () => { prepareOpening(); draw(); syncPlayback(); };
+  const playback = createHandPlayback(video, {
+    onFrame: () => {
+      painter.render();
+      if (Number.isFinite(video.duration) && video.duration > 0) {
+        onFrame?.(video.currentTime / video.duration);
+      }
+      if (!hasFrame) {
+        hasFrame = true;
+        onReady(true);
+      }
+    },
+    onUnavailable: () => onReady(false),
+  });
   const resize = () => {
     const { width, height } = canvas.getBoundingClientRect();
     painter.resize(Math.max(1, width), Math.max(1, height));
-    draw();
+    if (hasFrame && !contextLost && !video.seeking && video.readyState >= 2) painter.render();
   };
   const onContextLost = (event: Event) => {
     event.preventDefault();
     contextLost = true;
-    hasFrame = false;
-    cancelFrame();
-    video.pause();
+    playback.setActive(false);
     onReady(false);
   };
-  const onContextRestored = () => { contextLost = false; resize(); syncPlayback(); };
-  const onError = () => { cancelFrame(); hasFrame = false; onReady(false); };
-
+  const onContextRestored = () => {
+    contextLost = false;
+    resize();
+    playback.setActive(inView);
+  };
   const observer = new ResizeObserver(resize);
   const visibilityObserver = new IntersectionObserver(([entry]) => {
     inView = entry.isIntersecting;
-    syncPlayback();
+    playback.setActive(inView && !contextLost);
   });
   observer.observe(canvas);
   visibilityObserver.observe(canvas);
   canvas.addEventListener('webglcontextlost', onContextLost);
   canvas.addEventListener('webglcontextrestored', onContextRestored);
-  video.addEventListener('loadedmetadata', prepareOpening);
-  video.addEventListener('loadeddata', onLoaded);
-  video.addEventListener('playing', onPlaying);
-  video.addEventListener('seeked', draw);
-  video.addEventListener('error', onError);
-  document.addEventListener('visibilitychange', syncPlayback);
-  window.addEventListener('pointerdown', play, { passive: true });
-  video.muted = true;
-  prepareOpening();
   resize();
-  if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) onLoaded();
-  else play();
 
   return () => {
-    stopped = true;
-    cancelFrame();
+    playback.dispose();
     observer.disconnect();
     visibilityObserver.disconnect();
     canvas.removeEventListener('webglcontextlost', onContextLost);
     canvas.removeEventListener('webglcontextrestored', onContextRestored);
-    video.removeEventListener('loadedmetadata', prepareOpening);
-    video.removeEventListener('loadeddata', onLoaded);
-    video.removeEventListener('playing', onPlaying);
-    video.removeEventListener('seeked', draw);
-    video.removeEventListener('error', onError);
-    document.removeEventListener('visibilitychange', syncPlayback);
-    window.removeEventListener('pointerdown', play);
-    video.pause();
     painter.dispose();
   };
 }
