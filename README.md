@@ -10,7 +10,7 @@ Requires Node.js >= 22.13.
 ```bash
 npm ci
 npm run dev      # local dev server
-npm test         # mobile video playback regression checks
+npm test         # hero and demo playback regression checks
 npm run build    # production build into dist/
 npm run preview  # serve the production build
 ```
@@ -50,6 +50,23 @@ animated opening, and fully open as true (unless reduced motion is enabled).
   layout styles live in `src/symbiosis-demo.css`.
 - Demo button mappings and video dimensions live in `src/demos.ts`; media is in
   `public/media/demos/` and loads only after a visitor opens a player.
+  Each demo's `playback.defaultRate` is 0.75. Visitors can choose 0.25×–2× in
+  the player; their choice lasts until the player is closed, including after
+  seeking, pausing, or replaying. Audio keeps its original pitch.
+  To set an automatic speed plan, add non-overlapping `playback.segments`, e.g.
+  `[{ start: 0, end: 10, rate: 0.5 }, { start: 10, end: 30, rate: 1 }]`.
+  Times are seconds on the original video timeline, with inclusive starts and
+  exclusive ends. Gaps use `defaultRate`. A configured plan adds an Auto option;
+  manual speed choices override the plan until Auto is selected again. Segment
+  changes follow media time updates, so they are not frame-accurate edits.
+- EEG Models has a Text details control that magnifies its white AI analysis
+  panel from the same decoded video frame. The detail view follows playback,
+  pauses, and seeks without loading a second video. Swipe/scroll horizontally
+  to inspect the panel, or focus it and use the arrow keys. Bounds are normalized
+  in `demos.ts` (`detailRegion`). Frame callbacks are removed when closed and
+  suspended while paused or hidden. Processing provenance for the enhanced
+  recording is in `public/media/demos/SOURCES.md`; upscaling cannot recover
+  text detail that was absent from the recording.
 
 The News, Publications, and Contact pages use `#news`, `#publications`, and
 `#contact` links so direct visits, refreshes, and browser history work on GitHub
