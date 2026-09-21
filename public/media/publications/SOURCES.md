@@ -1,7 +1,7 @@
 # Publication thumbnails
 
 Original research figures and author-provided illustrations, downloaded without
-modification on 2026-09-20. Titles, authors and publication links live in
+modification on 2026-09-20 (ZIPBrain added on 2026-09-21). Titles, authors and publication links live in
 `src/site-content.ts`. These thumbnails illustrate the corresponding research;
 they are not journal covers or venue endorsements.
 
@@ -10,6 +10,7 @@ they are not journal covers or venue endorsements.
 | `deepevidence.png` | https://zifeng.wang/images/pubs/deepevidence.png |
 | `biodsbench.webp` | https://zifeng.wang/images/pubs/datascience-copilot.webp |
 | `tfm-tokenizer.jpg` | https://zhengchen3.github.io/images/slider7001400/tfm.jpg |
+| `zipbrain.svg` | Figure 2, https://arxiv.org/html/2608.07033v1/method_compression_flow_7.4.drawio.svg (CC BY 4.0, unchanged; Lingwei Li et al.) |
 | `odebrain.jpg` | https://zhengchen3.github.io/images/slider7001400/odebrain.jpg |
 | `evobrain.jpg` | https://zhengchen3.github.io/images/slider7001400/evobrain.jpg |
 | `celm.png` | Framework figure in https://github.com/Jathurshan0330/CELM (GitHub-hosted README image) |
