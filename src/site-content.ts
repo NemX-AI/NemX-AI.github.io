@@ -67,6 +67,17 @@ export const publications: Publication[] = [
     ],
   },
   {
+    id: 'zipbrain',
+    title: 'ZIPBrain: Can EEG Foundation Models Be Faster, Locally Deployable, but Accurate?',
+    authors: 'Lingwei Li, Yirong Kan, Peng Chen, Xu Cao, Zheng Chen, Yasuhiko Nakashima',
+    venue: 'arXiv preprint',
+    year: 2026,
+    image: '/media/publications/zipbrain.svg',
+    links: [
+      { label: 'Paper', href: 'https://arxiv.org/abs/2608.07033' },
+    ],
+  },
+  {
     id: 'odebrain',
     title: 'ODEBrain: Continuous-Time EEG Graph for Modeling Dynamic Brain Networks',
     authors: 'Haohui Jia, Zheng Chen, Lingwei Zhu, Rikuto Kotoge, Jathurshan Pradeepkumar, Yasuko Matsubara, Jimeng Sun, Yasushi Sakurai, Takashi Matsubara',
