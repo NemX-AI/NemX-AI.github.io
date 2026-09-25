@@ -31,8 +31,17 @@ animated opening, and fully open as true (unless reduced motion is enabled).
 ## Content and contact
 
 - Add confirmed announcements and papers in `src/site-content.ts`. News supports
-  an ISO date (`YYYY-MM-DD`), category, paragraphs, and a source link. Publications
-  support a thumbnail, authors, venue, year, a version/status note, and resource links.
+  an ISO posting date (`YYYY-MM-DD`), category, title, paragraphs, and an optional
+  source link. Both the News page and homepage use the same list, sorted newest
+  first. The latest item automatically appears in the homepage announcement bar;
+  older entries remain on the News page. Optional `announcement: { label, text }`
+  provides a short version for the bar; otherwise it uses the category and title.
+  Optional `highlight: { value, label }` adds a typographic milestone cover to
+  the featured story (for example, `3` and `Papers accepted`). Without it, the
+  story uses a text layout. Earlier news appears in a compact archive below.
+  An empty list hides the bar. After editing, build and deploy as usual.
+  Publications support a thumbnail, authors, venue, year, a version/status note,
+  and resource links.
   Use the official publication title; a preprint's earlier title can go in `note`.
   Thumbnail provenance is recorded in `public/media/publications/SOURCES.md`.
   Empty lists show a forthcoming message rather than sample research.

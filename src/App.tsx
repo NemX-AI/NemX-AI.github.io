@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import HandsOverlay from './HandsOverlay';
 import DemoPlayer from './DemoPlayer';
@@ -6,6 +6,7 @@ import { demos, type Demo } from './demos';
 import SymbiosisSection from './SymbiosisSection';
 import { ContactPage, NewsPage, PublicationsPage, SiteFooter } from './SitePages';
 import { usePage, type Page } from './use-page';
+import NewsAnnouncement from './NewsAnnouncement';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const backgroundVideo = '/media/background.mp4';
@@ -99,52 +100,67 @@ function AdaptiveIcon() {
 }
 
 function Navbar({ page }: { page: Page }) {
+  const announcementRef = useRef<HTMLElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [announcementOffset, setAnnouncementOffset] = useState(0);
 
-  useEffect(() => {
-    const syncScroll = () => setScrolled(window.scrollY > 8);
+  useLayoutEffect(() => {
+    // The announcement scrolls away; navigation stays at the top below it.
+    const syncScroll = () => {
+      setScrolled(window.scrollY > 8);
+      setAnnouncementOffset(Math.max(0, announcementRef.current?.getBoundingClientRect().bottom ?? 0));
+    };
+    const resizeObserver = new ResizeObserver(syncScroll);
+    if (announcementRef.current) resizeObserver.observe(announcementRef.current);
     window.addEventListener('scroll', syncScroll, { passive: true });
     syncScroll();
-    return () => window.removeEventListener('scroll', syncScroll);
-  }, []);
+    return () => {
+      window.removeEventListener('scroll', syncScroll);
+      resizeObserver.disconnect();
+    };
+  }, [page]);
 
   return (
-    <motion.nav
-      aria-label="Primary navigation"
-      data-scrolled={scrolled || page !== 'home'}
-      initial={{ y: -16, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease }}
-      className="site-nav pointer-events-none fixed left-0 top-0 z-50 w-full"
-    >
-      <a href="#home" aria-label="NemX Labs home" className="nav-brand pointer-events-auto flex items-center gap-1">
-        <NeuralMark />
-        <span className="font-display text-[26px] font-medium tracking-tight text-black">
-          NemX Labs
-        </span>
-      </a>
-
-      <div className="site-page-links">
-        <a href="#news" aria-current={page === 'news' ? 'page' : undefined}>News</a>
-        <a href="#publications" aria-current={page === 'publications' ? 'page' : undefined}>Publications</a>
-        <a href="#contact" aria-current={page === 'contact' ? 'page' : undefined}>Contact us</a>
-      </div>
-
-      <div className="nav-symbiosis pointer-events-auto flex items-center">
-        <a
-          href="#symbiosis"
-          aria-label="Symbiotic Intelligence"
-          className="flex items-center gap-3.5 whitespace-nowrap rounded-full border border-black/[0.03] bg-[#F4F4F6] p-1 pr-6 transition-colors hover:bg-[#EAEAEF]"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white">
-            <AdaptiveIcon />
-          </span>
-          <span className="nav-intelligence-label select-none text-[11px] font-medium text-black/70">
-            Symbiotic Intelligence
+    <>
+      {page === 'home' && <NewsAnnouncement ref={announcementRef} />}
+      <motion.nav
+        aria-label="Primary navigation"
+        data-scrolled={scrolled || page !== 'home'}
+        initial={{ y: -16, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease }}
+        style={{ top: announcementOffset }}
+        className="site-nav pointer-events-none fixed left-0 top-0 z-50 w-full"
+      >
+        <a href="#home" aria-label="NemX Labs home" className="nav-brand pointer-events-auto flex items-center gap-1">
+          <NeuralMark />
+          <span className="font-display text-[26px] font-medium tracking-tight text-black">
+            NemX Labs
           </span>
         </a>
-      </div>
-    </motion.nav>
+
+        <div className="site-page-links">
+          <a href="#news" aria-current={page === 'news' ? 'page' : undefined}>News</a>
+          <a href="#publications" aria-current={page === 'publications' ? 'page' : undefined}>Publications</a>
+          <a href="#contact" aria-current={page === 'contact' ? 'page' : undefined}>Contact us</a>
+        </div>
+
+        <div className="nav-symbiosis pointer-events-auto flex items-center">
+          <a
+            href="#symbiosis"
+            aria-label="Symbiotic Intelligence"
+            className="flex items-center gap-3.5 whitespace-nowrap rounded-full border border-black/[0.03] bg-[#F4F4F6] p-1 pr-6 transition-colors hover:bg-[#EAEAEF]"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white">
+              <AdaptiveIcon />
+            </span>
+            <span className="nav-intelligence-label select-none text-[11px] font-medium text-black/70">
+              Symbiotic Intelligence
+            </span>
+          </a>
+        </div>
+      </motion.nav>
+    </>
   );
 }
 
