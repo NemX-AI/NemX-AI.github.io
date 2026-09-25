@@ -3,6 +3,8 @@ export type NewsItem = {
   date: string;
   category: string;
   title: string;
+  announcement?: { label: string; text: string };
+  highlight?: { value: string; label: string };
   paragraphs: string[];
   link?: { label: string; href: string };
 };
@@ -18,8 +20,22 @@ export type Publication = {
   links: { label: string; href: string }[];
 };
 
-// Add verified NemX announcements here, newest first.
-export const news: NewsItem[] = [];
+// Use the announcement's posting date. The homepage highlights the newest item.
+export const news: NewsItem[] = [
+  {
+    id: 'neurips-2026-three-papers',
+    date: '2026-09-25',
+    category: 'Research',
+    title: 'Three NemX papers accepted at NeurIPS 2026',
+    announcement: { label: 'NeurIPS 2026', text: 'Three NemX papers accepted' },
+    highlight: { value: '3', label: 'Papers accepted' },
+    paragraphs: [
+      'NemX has three papers accepted at the 2026 Conference on Neural Information Processing Systems (NeurIPS). Congratulations to everyone who contributed to this work.',
+    ],
+  },
+];
+
+export const newsByDate = [...news].sort((a, b) => b.date.localeCompare(a.date));
 
 // Titles, authors and venues follow the linked publisher/proceedings records.
 // For preprints, use the current arXiv record and label workshop versions separately.
