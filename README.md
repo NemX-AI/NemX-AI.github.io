@@ -47,7 +47,7 @@ animated opening, and fully open as true (unless reduced motion is enabled).
   Empty lists show a forthcoming message rather than sample research.
 - Set `contactEmails` in that file to the team's public mailboxes. The contact form
   validates the visitor's email, purpose, and message, then prepares an email
-  draft addressed to both listed contacts. Each address also has its own email
+  draft addressed to all listed contacts. Each address also has its own email
   link. The visitor reviews and sends the draft in their email app. Until a mailbox is
   configured, submission stays disabled. GitHub Pages does not receive or store
   form submissions; direct website delivery would require a separate service.

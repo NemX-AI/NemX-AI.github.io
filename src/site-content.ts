@@ -145,5 +145,5 @@ export const publications: Publication[] = [
   },
 ];
 
-// Public contact addresses confirmed by the team. Drafts address both recipients.
-export const contactEmails = ['NemXAI2@gmail.com', 'hezhy58@outlook.com'];
+// Public contact addresses confirmed by the team. Drafts address all listed recipients.
+export const contactEmails = ['contact@nemx.ai'];
