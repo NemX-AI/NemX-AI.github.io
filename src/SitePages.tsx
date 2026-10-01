@@ -165,7 +165,7 @@ export function ContactPage() {
           <label>Your message<textarea name="message" placeholder="Tell us a little about your idea or question." rows={6} required maxLength={3000} /></label>
           <div className="contact-submit">
             <button type="submit" className="solid-button" disabled={!contactEmails.length}>Prepare email <span aria-hidden="true">↗</span></button>
-            <p>{contactEmails.length ? 'Addressed to both contacts. Review and send in your email app.' : 'Our email contact will be available soon.'}</p>
+            <p>{contactEmails.length ? 'Review and send your message in your email app.' : 'Our email contact will be available soon.'}</p>
           </div>
           {draft && <div className="contact-draft" role="status"><p>Your email draft is ready. Open your email app to review and send it.</p><p className="contact-recipients">To: {contactEmails.join(', ')}</p><a className="text-link" href={draft}>Open email app <span aria-hidden="true">↗</span></a></div>}
         </form>
